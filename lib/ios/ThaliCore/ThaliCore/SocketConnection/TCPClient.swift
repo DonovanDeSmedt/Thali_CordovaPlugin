@@ -52,11 +52,14 @@ extension TCPClient: GCDAsyncSocketDelegate {
 
   func socket(sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
     activeConnections.modify { $0.append(sock) }
+    print("[MPCF]: TCP client is connected to the host on port \(port)")
     sock.readDataWithTimeout(-1, tag: 0)
   }
 
   func socketDidDisconnect(sock: GCDAsyncSocket, withError err: NSError?) {
     sock.delegate = nil
+
+    print("[MPCF]: TCP client is disconnected with error \(err). Port: \(sock.localPort)")
 
     activeConnections.modify {
       if let indexOfDisconnectedSocket = $0.indexOf(sock) {
@@ -68,10 +71,11 @@ extension TCPClient: GCDAsyncSocketDelegate {
   }
 
   func socket(sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
-
+    print("[MPCF]: TCP client has written data into the socket. Port: \(sock.localPort)")
   }
 
   func socket(sock: GCDAsyncSocket, didReadData data: NSData, withTag tag: Int) {
+    print("[MPCF]: TCP client has read data from the socket with length \(data.length). Port: \(sock.localPort)")
     didReadDataHandler(sock, data)
   }
 }

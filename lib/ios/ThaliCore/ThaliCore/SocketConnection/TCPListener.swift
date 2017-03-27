@@ -72,6 +72,9 @@ class TCPListener: NSObject {
 extension TCPListener: GCDAsyncSocketDelegate {
 
   func socketDidDisconnect(sock: GCDAsyncSocket, withError err: NSError?) {
+
+    print("[MPCF]: TCP listener is disconnected with error \(err). Port: \(sock.localPort)")
+
     if sock == socket {
       socket.delegate = nil
       socket.delegateQueue = nil
@@ -91,11 +94,13 @@ extension TCPListener: GCDAsyncSocketDelegate {
   }
 
   func socket(sock: GCDAsyncSocket, didAcceptNewSocket newSocket: GCDAsyncSocket) {
+    print("[MPCF]: TCP listener has accepted new connection on port \(newSocket.localPort)")
     activeConnections.modify { $0.append(newSocket) }
     didAcceptConnectionHandler?(newSocket)
   }
 
   func socket(sock: GCDAsyncSocket, didReadData data: NSData, withTag tag: Int) {
+    print("[MPCF]: TCP listener has read data from socket with length \(data.length). Port: \(sock.localPort)")
     didReadDataFromSocketHandler(sock, data)
     sock.readDataWithTimeout(-1, tag: 0)
   }

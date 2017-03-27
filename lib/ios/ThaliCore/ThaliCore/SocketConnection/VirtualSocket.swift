@@ -74,6 +74,8 @@ class VirtualSocket: NSObject {
 
   func writeDataToOutputStream(data: NSData) {
 
+    print("[MPCF]: Virtual socket is writing data with length \(data.length)")
+
     if !outputStream.hasSpaceAvailable {
       pendingDataToWrite?.appendData(data)
       return
@@ -86,7 +88,9 @@ class VirtualSocket: NSObject {
     )
 
     let bytesWritten = outputStream.write(buffer, maxLength: dataLength)
+    print("[MPCF]: Virtual socket has written \(bytesWritten) bytes into the stream")
     if bytesWritten < 0 {
+      print("[MPCF]: Virtual socket run into the issue during writing")
       closeStreams()
     }
   }
@@ -101,13 +105,16 @@ class VirtualSocket: NSObject {
   }
 
   private func readDataFromInputStream() {
+    print("[MPCF]: Virtual socket is reading data")
     var buffer = [UInt8](count: maxReadBufferLength, repeatedValue: 0)
 
     let bytesReaded = self.inputStream.read(&buffer, maxLength: maxReadBufferLength)
     if bytesReaded >= 0 {
+      print("[MPCF]: Virtual socket has read \(bytesReaded) bytes from the stream")
       let data = NSData(bytes: &buffer, length: bytesReaded)
       didReadDataFromStreamHandler?(self, data)
     } else {
+      print("[MPCF]: Virtual socket run into the issue during reading")
       closeStreams()
     }
   }
