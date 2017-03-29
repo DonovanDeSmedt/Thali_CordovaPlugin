@@ -187,8 +187,9 @@ build_ios_if_possible()
       -configuration Debug \
       -destination 'platform=iOS' \
       build \
-      CONFIGURATION_BUILD_DIR="${TEST_PROJECT_DIR}/build/device" \
-      SHARED_PRECOMPS_DIR="${TEST_PROJECT_DIR}/build/sharedpch" \
+      CONFIGURATION_BUILD_DIR="${IOS_PROJECT_DIR}/build/device" \
+      SHARED_PRECOMPS_DIR="${IOS_PROJECT_DIR}/build/sharedpch" \
+      DEVELOPMENT_TEAM="${THALI_TEST_DEVELOPMENT_TEAM:-65Y83XEN2Z}" \
     )
 
     echo "end building ${TEST_PROJECT_NAME} iOS app"
