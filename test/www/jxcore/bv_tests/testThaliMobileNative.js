@@ -28,8 +28,7 @@ var logger = require('../lib/testLogger')('testThaliMobileNative');
 // that will get closed in teardown.
 var serverToBeClosed = null;
 
-var test = function () {};
-var xtest = tape({
+var test = tape({
   setup: function (t) {
     serverToBeClosed = {
       closeAll: function (callback) {
@@ -531,7 +530,7 @@ test('Can shift data', function (t) {
   });
 });
 
-xtest('Can shift data via parallel connections', function (t) {
+test('Can shift data via parallel connections', function (t) {
   var dataLength = 22;
 
   var formatPrintableData = function (data) {
@@ -547,25 +546,16 @@ xtest('Can shift data via parallel connections', function (t) {
         chunk.length, formatPrintableData(chunk.toString()));
 
       // when received all data, send it back
-      if (buffer.length === dataLength + 2) {
+      if (buffer.length === dataLength) {
         console.log('Server received all data: %s',
           formatPrintableData(buffer.toString()));
         var rawData = new Buffer(buffer);
         console.log('Server sends data back to client (%d bytes): %s',
           rawData.length, formatPrintableData(buffer));
-        socket.write(rawData.toString() + ' back', function () {
+        socket.write(rawData, function () {
           console.log('Server data flushed');
         });
         ended = true;
-        socket.end(function () {
-          console.log('Server\'s socket stream finished');
-        });
-      }
-    });
-    socket.on('end', function () {
-      // server ends connection, not client
-      if (!ended) {
-        t.fail(new Error('Unexpected end event'));
       }
     });
     socket.on('error', function (error) {
@@ -576,8 +566,6 @@ xtest('Can shift data via parallel connections', function (t) {
   serverToBeClosed = server;
 
   function shiftData(sock, exchangeData) {
-    var log = console.log.bind(console, 'client (' + sock.localPort + ')');
-    log('Start shifting data:', exchangeData);
     return new Promise(function (resolve, reject) {
       sock.on('error', function (error) {
         console.log('Client socket error:', error.message, error.stack);
@@ -587,18 +575,20 @@ xtest('Can shift data via parallel connections', function (t) {
       var receivedData = '';
       sock.on('data', function (chunk) {
         receivedData += chunk.toString();
+        if (receivedData === exchangeData) {
+          sock.end();
+        }
       });
       sock.on('end', function () {
-        log(f('received %d bytes: %s', receivedData.length, receivedData));
-        // t.equal(receivedData, exchangeData, 'got the same data back');
+        t.equal(receivedData, exchangeData, 'got the same data back');
         resolve();
       });
 
       var rawData = new Buffer(exchangeData);
-      log(f('Client sends data (%d bytes): %s',
-        rawData.length, formatPrintableData(exchangeData)));
+      console.log('Client sends data (%d bytes): %s',
+        rawData.length, formatPrintableData(exchangeData));
       sock.write(rawData, function () {
-        log('Client data flushed');
+        console.log('Client data flushed');
       });
     });
   }
@@ -615,9 +605,8 @@ xtest('Can shift data via parallel connections', function (t) {
       ]);
     }).then(function (sockets) {
       return Promise.all(sockets.map(function (socket, index) {
-        var string = randomString.generate(dataLength) + ' ' + index;
-        // var string =  'small amount of data ' + index;
-        // t.equal(string.length, dataLength, 'correct string length');
+        var string =  'small amount of data ' + index;
+        t.equal(string.length, dataLength, 'correct string length');
         return shiftData(socket, string);
       }));
     })
@@ -628,7 +617,7 @@ xtest('Can shift data via parallel connections', function (t) {
   });
 });
 
-xtest('Can shift data securely', function (t) {
+test('Can shift data securely', function (t) {
   var exchangeData = 'small amount of data';
 
   var uuids = t.participants.map(function (p) { return p.uuid; });
