@@ -528,7 +528,7 @@ test('Can shift data', function (t) {
     });
   }
 
-  Mobile('peerAvailabilityChanged').registerToNative(function (peers) {
+  thaliMobileNativeTestUtils.startAndListen(t, server, function (peers) {
     peers.forEach(function (peer) {
       if (peer.peerAvailable && !connecting) {
         connecting = true;
@@ -540,17 +540,6 @@ test('Can shift data', function (t) {
             onConnectFailure(t, error, null, peer);
           });
       }
-    });
-  });
-
-  server.listen(0, function () {
-    var port = server.address().port;
-    Mobile('startUpdateAdvertisingAndListening').callNative(port,
-    function (err) {
-      t.notOk(err, 'Can call startUpdateAdvertisingAndListening without error');
-      Mobile('startListeningForAdvertisements').callNative(function (err) {
-        t.notOk(err, 'Can call startListeningForAdvertisements without error');
-      });
     });
   });
 });
@@ -582,7 +571,7 @@ test('Can shift data via parallel connections', function (t) {
     });
   }
 
-  Mobile('peerAvailabilityChanged').registerToNative(function (peers) {
+  thaliMobileNativeTestUtils.startAndListen(t, server, function (peers) {
     peers.forEach(function (peer) {
       if (peer.peerAvailable && !connecting) {
         connecting = true;
@@ -594,17 +583,6 @@ test('Can shift data via parallel connections', function (t) {
             onConnectFailure(t, error, null, peer);
           });
       }
-    });
-  });
-
-  server.listen(0, function () {
-    var port = server.address().port;
-    Mobile('startUpdateAdvertisingAndListening').callNative(port,
-    function (err) {
-      t.notOk(err, 'Can call startUpdateAdvertisingAndListening without error');
-      Mobile('startListeningForAdvertisements').callNative(function (err) {
-        t.notOk(err, 'Can call startListeningForAdvertisements without error');
-      });
     });
   });
 });
